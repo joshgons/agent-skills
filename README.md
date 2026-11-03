@@ -11,9 +11,9 @@ pull requests can't be merged here. Open an issue instead.
 With the [skills CLI](https://skills.sh), pick skills and agents interactively:
 
 ```bash
-npx skills add GonsalvesMedia/agent-skills
-npx skills add GonsalvesMedia/agent-skills --skill handoff   # one skill
-npx skills add GonsalvesMedia/agent-skills -g                # every project, not just this one
+npx skills add joshgons/agent-skills
+npx skills add joshgons/agent-skills --skill handoff   # one skill
+npx skills add joshgons/agent-skills -g                # every project, not just this one
 ```
 
 Or clone this repository and link each skill into the folders your agents read.
