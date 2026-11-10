@@ -44,6 +44,8 @@ printf '%s\n' "$PROMPT" | \
 
 The wrapper applies `codex exec -` (prompt from stdin), `sandbox_mode="read-only"`, `approval_policy="never"`, an explicit model/reasoning level, and `--ignore-user-config`. The latter prevents user-configured MCP or provider settings from becoming an ambient delegation capability; authentication still uses Codex's normal auth state.
 
+Codex refuses to run outside a Git repository. When the review target is not a repository (a folder of many repos, a home directory, a scratch folder), add `--no-git-check`, which passes `--skip-git-repo-check`. It is advisory-only: patch mode keeps the Git requirement so the parent can diff and undo Codex's edits.
+
 ### Patch Mode
 
 Use only when the user asked for implementation or file changes. Codex may edit the selected workspace and run local commands inside the workspace-write sandbox.
@@ -55,6 +57,8 @@ printf '%s\n' "$PROMPT" | \
 ```
 
 The wrapper applies `sandbox_mode="workspace-write"`, `approval_policy="never"`, and `--ignore-user-config`. This preserves normal local editing and test/build/lint commands in the selected workspace while preventing ambient Codex configuration from adding integrations. Never add `--dangerously-bypass-approvals-and-sandbox`, `--yolo`, or `sandbox_mode="danger-full-access"`. Do not commit, push, deploy, publish, run migrations, reset databases, or mutate remote infrastructure unless the user separately authorizes that exact action and all applicable repo safety checks are satisfied.
+
+`--network` (patch mode only) is an opt-in exception that adds `sandbox_workspace_write.network_access=true`. Use it only when the user has explicitly put network use (installs, docs, or named remote services) in scope for that project, state the allowed services and environments in the prompt, and keep production/destructive operations behind the user's explicit approval.
 
 `--add-dir` is an elevated exception: use it only when the user has separately named and authorized the additional path and why it must be writable. Do not infer it from imports, monorepo layout, or a task prompt.
 

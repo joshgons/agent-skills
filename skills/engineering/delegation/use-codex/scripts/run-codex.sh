@@ -22,6 +22,9 @@ Options:
   --resume SESSION_ID|last      Resume an existing Codex exec session
   --add-dir PATH                Additional writable path for patch mode
   --json                        Stream JSONL events to stdout
+  --network                     Patch mode only: allow outbound network for commands
+                                (opt-in; requires the user to place network use in scope)
+  --no-git-check                Advisory mode only: allow a workspace outside a Git repository
 EOF
 }
 
@@ -32,6 +35,8 @@ reasoning="medium"
 output=""
 resume=""
 json=0
+network=0
+no_git_check=0
 add_dirs=""
 
 while [ "$#" -gt 0 ]; do
@@ -74,6 +79,14 @@ $2"
       ;;
     --json)
       json=1
+      shift
+      ;;
+    --network)
+      network=1
+      shift
+      ;;
+    --no-git-check)
+      no_git_check=1
       shift
       ;;
     -h|--help)
@@ -141,6 +154,24 @@ if [ "$mode" = advisory ]; then
   set -- "$@" -c 'sandbox_mode="read-only"'
 else
   set -- "$@" -c 'sandbox_mode="workspace-write"'
+fi
+
+if [ "$network" -eq 1 ]; then
+  [ "$mode" = patch ] || {
+    printf 'Cannot use --network in advisory mode\n' >&2
+    exit 2
+  }
+  set -- "$@" -c 'sandbox_workspace_write.network_access=true'
+fi
+
+# Patch mode keeps Codex's Git-repo requirement: Git is how the parent reviews
+# and undoes Codex's edits. A read-only run has nothing to undo.
+if [ "$no_git_check" -eq 1 ]; then
+  [ "$mode" = advisory ] || {
+    printf 'Cannot use --no-git-check in patch mode\n' >&2
+    exit 2
+  }
+  set -- "$@" --skip-git-repo-check
 fi
 
 if [ "$json" -eq 1 ]; then
